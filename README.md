@@ -50,7 +50,7 @@ Lucide Icons: Clean vector icon set.
 
 Clone or Download the Repository:
 
-git clone https://github.com/your-username/password-generator-app.git
+git clone https://github.com/Kapish-K/password-generator-app.git
 
 
 Run the Application:
