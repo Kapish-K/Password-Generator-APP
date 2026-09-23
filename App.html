@@ -25,6 +25,8 @@
     </script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QR Code Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -188,6 +190,9 @@
                         <button onclick="toggleMask()" title="Mask / Unmask" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition">
                             <i data-lucide="eye" id="maskIcon" class="w-4 h-4"></i>
                         </button>
+                        <button onclick="openQrModal()" title="Show QR code" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition">
+                            <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        </button>
                         <button onclick="generatePassword()" title="Regenerate" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition">
                             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                         </button>
@@ -292,6 +297,29 @@
         </div>
 
     </main>
+
+    <!-- QR CODE MODAL -->
+    <div id="qrModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-indigo-950/30">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-indigo-400 font-semibold">Share Password</p>
+                    <h3 class="text-lg font-bold text-white mt-1">Scan to copy on phone</h3>
+                </div>
+                <button onclick="closeQrModal()" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition" title="Close QR code">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="bg-white rounded-2xl p-3 mx-auto w-fit">
+                <div id="qrCodeContainer" class="w-[220px] h-[220px] flex items-center justify-center rounded-xl overflow-hidden"></div>
+            </div>
+            <p class="mt-4 text-center text-xs text-zinc-400">Scan with your phone camera to copy the password.</p>
+            <div class="mt-4 flex items-center justify-center gap-2 text-[11px] text-zinc-500">
+                <i data-lucide="smartphone" class="w-3.5 h-3.5 text-indigo-400"></i>
+                <span id="qrPasswordPreview" class="font-mono text-indigo-300 break-all text-center">Password preview</span>
+            </div>
+        </div>
+    </div>
 
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 border border-indigo-500/30 text-indigo-300 text-xs font-semibold py-2.5 px-4 rounded-full shadow-2xl transition-all duration-300 opacity-0 pointer-events-none translate-y-4 flex items-center gap-2 backdrop-blur-md z-50">
@@ -511,6 +539,39 @@
             icon.setAttribute('data-lucide', isMasked ? 'eye-off' : 'eye');
             lucide.createIcons();
             renderPasswordDisplay(currentPassword);
+        }
+
+        function openQrModal() {
+            if (!currentPassword || currentPassword === "Select character type") return;
+
+            if (typeof QRCode === 'undefined') {
+                showToast('QR library failed to load');
+                return;
+            }
+
+            const modal = document.getElementById('qrModal');
+            const qrContainer = document.getElementById('qrCodeContainer');
+            const preview = document.getElementById('qrPasswordPreview');
+
+            preview.innerText = isMasked ? '•'.repeat(currentPassword.length) : currentPassword;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: currentPassword,
+                width: 220,
+                height: 220,
+                colorDark: '#111827',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        function closeQrModal() {
+            const modal = document.getElementById('qrModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         // Clipboard Copy & 45s Auto-Clear Timer
